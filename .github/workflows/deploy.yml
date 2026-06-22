@@ -61,8 +61,16 @@ jobs:
           sed -i "s/CHANGE_ME_STRONG_DB_PASSWORD/oxypc_strong_password/g" /opt/oxypc/.env
           sed -i "s/localhost:5432\/oxypc_db/localhost:5432\/oxypc_inventory_db/g" /opt/oxypc/.env
           
-          # Run database migrations
-          alembic upgrade head
+          # Run database migrations or initial setup
+          if [ ! -f /opt/oxypc/.db_initialized ]; then
+            echo "First deployment detected: Running setup_db.py to create initial schema"
+            python setup_db.py
+            alembic stamp head
+            touch /opt/oxypc/.db_initialized
+          else
+            echo "Subsequent deployment: Running Alembic migrations"
+            alembic upgrade head
+          fi
           
           # Restart the service
           systemctl restart oxypc

@@ -32,16 +32,22 @@ async def create_admin(session: AsyncSession):
         print("  Admin user already exists. Skipping.")
         return
 
-    print("\nCreate admin account:")
-    username = input("  Admin username [admin]: ").strip() or "admin"
-    full_name = input("  Admin full name [OxyPC Admin]: ").strip() or "OxyPC Admin"
+    try:
+        print("\nCreate admin account:")
+        username = input("  Admin username [admin]: ").strip() or "admin"
+        full_name = input("  Admin full name [OxyPC Admin]: ").strip() or "OxyPC Admin"
 
-    while True:
-        password = getpass.getpass("  Password [oxypc@admin123]: ").strip() or "oxypc@admin123"
-        confirm = getpass.getpass("  Confirm password: ").strip() or "oxypc@admin123"
-        if password == confirm:
-            break
-        print("  Passwords don't match. Try again.")
+        while True:
+            password = getpass.getpass("  Password [oxypc@admin123]: ").strip() or "oxypc@admin123"
+            confirm = getpass.getpass("  Confirm password: ").strip() or "oxypc@admin123"
+            if password == confirm:
+                break
+            print("  Passwords don't match. Try again.")
+    except EOFError:
+        print("\n  [Non-interactive mode] Using default admin credentials.")
+        username = "admin"
+        full_name = "OxyPC Admin"
+        password = "oxypc@admin123"
 
     admin = User(
         username=username,
