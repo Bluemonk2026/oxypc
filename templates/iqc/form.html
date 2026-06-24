@@ -320,129 +320,8 @@
             </div>
           </div>
 
-          <!-- ── Section: Inspection Details (manual) ── -->
-          <p class="fw-bold small text-uppercase mb-2 border-bottom pb-1 sec-hd">Inspection Details</p>
-
-          <!-- Screen Condition (under Inspection Details) -->
-          <div class="row g-2 mb-3">
-            {% set yn = ['Yes','No'] %}
-            {% set yn3 = ['Yes','No'] %}
-            {% set scratch_opts = ['No','Minor Scratch','Major Scratch'] %}
-            <div class="col-md-2">
-              <label class="form-label small">Dot</label>
-              <select name="screen_dot" class="form-select form-select-sm">
-                <option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label small">Line</label>
-              <select name="screen_line" class="form-select form-select-sm">
-                <option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label small">Functional</label>
-              <select name="screen_functional" class="form-select form-select-sm">
-                <option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label small">Colour Discoloration</label>
-              <select name="screen_discoloration" class="form-select form-select-sm">
-                <option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label small">Patch</label>
-              <select name="screen_patch" class="form-select form-select-sm">
-                <option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label small">Broken</label>
-              <select name="screen_broken" class="form-select form-select-sm">
-                <option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label small">Flickering</label>
-              <select name="screen_flickering" class="form-select form-select-sm">
-                <option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label small">Scratch</label>
-              <select name="screen_scratch" class="form-select form-select-sm">
-                <option value="">—</option>{% for o in scratch_opts %}<option>{{o}}</option>{% endfor %}
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label small">Loose</label>
-              <select name="screen_loose" class="form-select form-select-sm">
-                <option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label small">Missing</label>
-              <select name="screen_missing" class="form-select form-select-sm">
-                <option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label small">Hinge Broken</label>
-              <select name="screen_hinge_broken" class="form-select form-select-sm">
-                <option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label small">Colour Spread</label>
-              <select name="screen_colour_spread" class="form-select form-select-sm">
-                <option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label small">Keyboard Mark</label>
-              <select name="screen_keyboard_mark" class="form-select form-select-sm">
-                <option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}
-              </select>
-            </div>
-          </div>
-
-          <!-- Keyboard & Touchpad (under Inspection Details) -->
-          <div class="row g-2 mb-3">
-            <!-- Keyboard (cosmetic) -->
-            <div class="col-md-2">
-              <label class="form-label small">Keyboard Colour Fade</label>
-              <select name="keyboard_colour_fade" class="form-select form-select-sm">
-                <option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label small">Key Missing</label>
-              <select name="keyboard_key_missing" class="form-select form-select-sm">
-                <option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label small">Keyboard Hard Press</label>
-              <select name="keyboard_hard_press" class="form-select form-select-sm">
-                <option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}
-              </select>
-            </div>
-            <!-- Touchpad (cosmetic) -->
-            <div class="col-md-2">
-              <label class="form-label small">Touchpad Scratch</label>
-              <select name="touchpad_scratch" class="form-select form-select-sm">
-                <option value="">—</option>{% for o in scratch_opts %}<option>{{o}}</option>{% endfor %}
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label small">Touchpad Colour Fade</label>
-              <select name="touchpad_colour_fade" class="form-select form-select-sm">
-                <option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}
-              </select>
-            </div>
-          </div>
+          {% set yn = ['Yes','No'] %}
+          {% set scratch_opts = ['No','Minor Scratch','Major Scratch'] %}
 
           <!-- ── Section 6: Panels A / B / C / D ── -->
           <p class="fw-bold small text-uppercase mb-2 border-bottom pb-1 sec-hd">
@@ -606,7 +485,41 @@
             </div>
           </div>
 
-          <!-- (Keyboard & Touchpad moved up under Inspection Details) -->
+          <!-- Display card (panel-style) -->
+          <div class="card border bg-light mb-2">
+            <div class="card-body py-2">
+              <p class="small fw-semibold text-uppercase mb-2 text-info">Display</p>
+              <div class="row g-2">
+                <div class="col-md-2"><label class="form-label small">Dot</label><select name="screen_dot" class="form-select form-select-sm"><option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}</select></div>
+                <div class="col-md-2"><label class="form-label small">Line</label><select name="screen_line" class="form-select form-select-sm"><option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}</select></div>
+                <div class="col-md-2"><label class="form-label small">Colour Discoloration</label><select name="screen_discoloration" class="form-select form-select-sm"><option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}</select></div>
+                <div class="col-md-2"><label class="form-label small">Colour Spread</label><select name="screen_colour_spread" class="form-select form-select-sm"><option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}</select></div>
+                <div class="col-md-2"><label class="form-label small">Patch</label><select name="screen_patch" class="form-select form-select-sm"><option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}</select></div>
+                <div class="col-md-2"><label class="form-label small">Flickering</label><select name="screen_flickering" class="form-select form-select-sm"><option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}</select></div>
+                <div class="col-md-2"><label class="form-label small">Functional</label><select name="screen_functional" class="form-select form-select-sm"><option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}</select></div>
+                <div class="col-md-2"><label class="form-label small">Scratch</label><select name="screen_scratch" class="form-select form-select-sm"><option value="">—</option>{% for o in scratch_opts %}<option>{{o}}</option>{% endfor %}</select></div>
+                <div class="col-md-2"><label class="form-label small">Loose</label><select name="screen_loose" class="form-select form-select-sm"><option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}</select></div>
+                <div class="col-md-2"><label class="form-label small">Missing</label><select name="screen_missing" class="form-select form-select-sm"><option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}</select></div>
+                <div class="col-md-2"><label class="form-label small">Broken</label><select name="screen_broken" class="form-select form-select-sm"><option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}</select></div>
+                <div class="col-md-2"><label class="form-label small">Hinge Broken</label><select name="screen_hinge_broken" class="form-select form-select-sm"><option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}</select></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Keyboard & Touchpad card (panel-style) -->
+          <div class="card border bg-light mb-3">
+            <div class="card-body py-2">
+              <p class="small fw-semibold text-uppercase mb-2 text-secondary">Keyboard &amp; Touchpad</p>
+              <div class="row g-2">
+                <div class="col-md-2"><label class="form-label small">Touchpad Scratch</label><select name="touchpad_scratch" class="form-select form-select-sm"><option value="">—</option>{% for o in scratch_opts %}<option>{{o}}</option>{% endfor %}</select></div>
+                <div class="col-md-2"><label class="form-label small">Touchpad Colour Fade</label><select name="touchpad_colour_fade" class="form-select form-select-sm"><option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}</select></div>
+                <div class="col-md-2"><label class="form-label small">Keyboard Mark</label><select name="screen_keyboard_mark" class="form-select form-select-sm"><option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}</select></div>
+                <div class="col-md-2"><label class="form-label small">Keyboard Colour Fade</label><select name="keyboard_colour_fade" class="form-select form-select-sm"><option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}</select></div>
+                <div class="col-md-2"><label class="form-label small">Key Missing</label><select name="keyboard_key_missing" class="form-select form-select-sm"><option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}</select></div>
+                <div class="col-md-2"><label class="form-label small">Keyboard Hard Press</label><select name="keyboard_hard_press" class="form-select form-select-sm"><option value="">—</option>{% for o in yn %}<option>{{o}}</option>{% endfor %}</select></div>
+              </div>
+            </div>
+          </div>
 
           <!-- ── Section 9: Condition & Location ── -->
           <p class="fw-bold small text-uppercase mb-2 border-bottom pb-1 sec-hd">Condition &amp; Location</p>
@@ -652,7 +565,7 @@
                 <option>Dispatch Area</option><option>Holding Zone</option>
               </select>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-3">
               <label class="form-label">Warehouse / Location</label>
               <input type="text" name="warehouse" class="form-control" placeholder="e.g. TRC 1st Floor, Rack A3">
             </div>
