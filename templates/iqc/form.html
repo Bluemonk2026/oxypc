@@ -21,8 +21,8 @@
                 <div class="mt-auto d-flex align-items-center justify-content-between gap-2">
                   <span id="diagnoseStatus" class="small"></span>
                   <div class="d-flex gap-1">
-                    <a href="/iqc/agent-installer" class="btn btn-sm btn-outline-secondary text-nowrap" title="Download Diagnose_Device_Agent.exe to this station"><i class="bi bi-cloud-download me-1"></i>Download Agent</a>
-                    <button type="button" id="diagnoseBtn" class="btn btn-sm btn-outline-success text-nowrap" title="Detect this station's hardware and auto-fill the form"><i class="bi bi-cpu me-1"></i>Diagnose this Device</button>
+                    <a id="downloadAgentBtn" href="/iqc/agent-installer" class="btn btn-sm btn-primary text-nowrap" title="Download Diagnose_Device_Agent.exe to this station"><i class="bi bi-cloud-download me-1"></i>Download Agent</a>
+                    <button type="button" id="diagnoseBtn" class="btn btn-sm btn-secondary text-nowrap" disabled title="Start the Diagnose_Device_Agent first, then click here"><i class="bi bi-cpu me-1"></i>Diagnose this Device</button>
                   </div>
                 </div>
               </div>
@@ -827,45 +827,77 @@ document.getElementById('lot_line_item_id').addEventListener('change', async fun
 (function(){
   var AGENT = 'http://127.0.0.1:8765/diagnose';
   var PING  = 'http://127.0.0.1:8765/ping';
-  var btn = document.getElementById('diagnoseBtn');
+  var btn   = document.getElementById('diagnoseBtn');
+  var dlBtn = document.getElementById('downloadAgentBtn');
   var status = document.getElementById('diagnoseStatus');
   if (!btn) return;
   var pollTimer = null;
+
   function stopPoll(){ if (pollTimer){ clearInterval(pollTimer); pollTimer = null; } }
-  function watchForAgent(){           // poll the cheap /ping until the agent comes up
+
+  function setAgentRunning(){
+    stopPoll();
+    if (status) status.innerHTML = '<span class="text-success"><i class="bi bi-check-circle me-1"></i>Agent is running — click Diagnose.</span>';
+    // Grey out download button
+    if (dlBtn){
+      dlBtn.classList.remove('btn-primary');
+      dlBtn.classList.add('btn-secondary', 'disabled');
+      dlBtn.setAttribute('tabindex', '-1');
+      dlBtn.setAttribute('aria-disabled', 'true');
+    }
+    // Enable diagnose button in green
+    btn.disabled = false;
+    btn.classList.remove('btn-secondary');
+    btn.classList.add('btn-success');
+  }
+
+  function watchForAgent(){
     if (pollTimer) return;
     var tries = 0;
     pollTimer = setInterval(function(){
       tries++;
-      if (tries > 40) { stopPoll(); return; }   // give up after ~2 min
+      if (tries > 40){ stopPoll(); return; }   // give up after ~2 min
       fetch(PING, {cache:'no-store'})
-        .then(function(r){
-          if (r && r.ok) {
-            stopPoll();
-            if (status) status.innerHTML = '<span class="text-success"><i class="bi bi-check-circle me-1"></i>Agent is running now — run the Diagnose.</span>';
-          }
-        })
+        .then(function(r){ if (r && r.ok){ setAgentRunning(); } })
         .catch(function(){});
     }, 3000);
   }
+
+  // Check immediately on page load
+  fetch(PING, {cache:'no-store'})
+    .then(function(r){ if (r && r.ok){ setAgentRunning(); } })
+    .catch(function(){ watchForAgent(); });   // not running yet — start polling
+
   btn.addEventListener('click', function(){
     stopPoll();
     btn.disabled = true;
+    btn.classList.remove('btn-success');
+    btn.classList.add('btn-secondary');
     if (status) status.innerHTML = '<span class="text-muted"><span class="spinner-border spinner-border-sm me-1"></span>Diagnosing this station…</span>';
     var ctrl = new AbortController();
     var t = setTimeout(function(){ ctrl.abort(); }, 12000);
+    var reached = false;
     fetch(AGENT, {headers: {'Accept':'application/json'}, signal: ctrl.signal})
       .then(function(r){ return r.json(); })
       .then(function(j){
-        if (!j.ok) { if (status) status.innerHTML = '<span class="text-danger">Diagnose failed: ' + (j.error || 'unknown') + '</span>'; return; }
+        reached = true;
+        if (!j.ok){ if (status) status.innerHTML = '<span class="text-danger">Diagnose failed: ' + (j.error || 'unknown') + '</span>'; return; }
         var n = (window.oxyqcPrefill ? window.oxyqcPrefill(j.data || {}) : 0);
-        if (status) status.innerHTML = '<span class="text-success"><i class="bi bi-check-circle me-1"></i>Diagnosed this station &amp; filled ' + n + ' field(s)</span>';
+        if (status) status.innerHTML = '<span class="text-success"><i class="bi bi-check-circle me-1"></i>Diagnosed &amp; filled ' + n + ' field(s).</span>';
       })
       .catch(function(){
-        if (status) status.innerHTML = '<span class="text-danger">Agent not running on this station. <a href="/iqc/agent-installer" class="fw-semibold text-decoration-underline">Download &amp; run the Diagnose_Device_Agent</a> once (no admin needed) — this will update when it starts.</span>';
+        if (status) status.innerHTML = '<span class="text-danger">Agent not running. Download &amp; run it once — button will activate when it starts.</span>';
         watchForAgent();
       })
-      .finally(function(){ clearTimeout(t); btn.disabled = false; });
+      .finally(function(){
+        clearTimeout(t);
+        if (reached){   // agent responded — restore green
+          btn.classList.remove('btn-secondary');
+          btn.classList.add('btn-success');
+          btn.disabled = false;
+        }
+        // if !reached: keep grey/disabled, watchForAgent will re-enable via setAgentRunning()
+      });
   });
 })();
 </script>
