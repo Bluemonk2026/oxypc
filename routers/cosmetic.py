@@ -15,6 +15,8 @@ from models.device import Device, DeviceStage, StageMovement
 from models.lot import Lot
 from models.iqc_inspection import IQCInspection
 from models.repair import RepairJob
+from models.part_request import PartRequest
+from services.parts_required import compute_required
 from auth.dependencies import get_current_user, require_roles, verify_csrf, require_module_perm
 
 router = APIRouter(prefix="/cosmetic", tags=["cosmetic"], dependencies=[Depends(verify_csrf)])
@@ -104,10 +106,31 @@ async def cosmetic_stage_list(stage_name: str, request: Request, db: AsyncSessio
             )).scalars().all()
             for r in rjs:
                 repairs_map.setdefault(str(r.device_id), []).append(r)
+        # ── Parts consumed: required parts (from IQC) + whether the part request
+        #    was Received → "Changed", else "Not Changed". ─────────────────────
+        parts_map = {}
+        if device_ids:
+            prs = (await db.execute(
+                select(PartRequest).where(PartRequest.device_id.in_(device_ids))
+                .order_by(PartRequest.created_at.desc())
+            )).scalars().all()
+            pr_by_dev_part = {}
+            for r in prs:
+                pr_by_dev_part.setdefault(str(r.device_id), {}).setdefault(r.part_name, r)
+            for d, _ in devices:
+                rows = compute_required(iqc_map.get(str(d.id)), d)
+                plist = []
+                for row in rows:
+                    if row.get("required"):
+                        req = pr_by_dev_part.get(str(d.id), {}).get(row["label"])
+                        plist.append({"label": row["label"],
+                                      "changed": bool(req and req.status == "received")})
+                parts_map[str(d.id)] = plist
         return templates.TemplateResponse("cosmetic/final_qc.html", {
             "request": request, "current_user": current_user,
             "stage": stage, "stage_label": STAGE_LABELS[stage],
             "devices": devices, "iqc_map": iqc_map, "repairs_map": repairs_map,
+            "parts_map": parts_map,
             "pipeline": COSMETIC_PIPELINE, "stage_labels": STAGE_LABELS,
         })
 
