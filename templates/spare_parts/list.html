@@ -81,18 +81,27 @@
 
   <!-- ── TAB 1: Part Master ── -->
   <div class="tab-pane fade show active p-0" id="masterTab" role="tabpanel">
-    <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+    <div class="d-flex justify-content-between align-items-center p-3 border-bottom flex-wrap gap-2">
       <span class="text-muted small">{{ total_part_types }} part type(s) &nbsp;|&nbsp;
         {% if below_min_count > 0 %}<span class="text-danger fw-semibold">{{ below_min_count }} below min stock</span>{% else %}<span class="text-success">All stocked OK</span>{% endif %}
       </span>
-      <a href="/spare-parts/new" class="btn btn-primary btn-sm">
-        <i class="bi bi-plus-circle me-1"></i>Add Part
-      </a>
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-outline-secondary btn-sm" onclick="spExport('partsTable',false)">
+          <i class="bi bi-file-earmark-arrow-down me-1"></i>Export All
+        </button>
+        <button id="expSel_partsTable" class="btn btn-outline-info btn-sm" onclick="spExport('partsTable',true)" disabled>
+          <i class="bi bi-download me-1"></i>Export Selected
+        </button>
+        <a href="/spare-parts/new" class="btn btn-primary btn-sm">
+          <i class="bi bi-plus-circle me-1"></i>Add Part
+        </a>
+      </div>
     </div>
     <div class="table-responsive">
       <table id="partsTable" class="table table-hover mb-0 small">
         <thead class="table-dark">
           <tr>
+            <th><input type="checkbox" class="form-check-input sp-sa" data-tbl="partsTable"></th>
             <th>Code</th><th>Name</th><th>Category</th>
             <th>Unit Price</th><th>In Stock</th><th>Min Alert</th>
             <th>Stock Value</th><th>Supplier</th><th>Actions</th>
@@ -101,6 +110,7 @@
         <tbody>
           {% for part in parts %}
           <tr class="{{ 'table-danger' if part.qty_in_stock <= part.min_stock_alert else '' }}">
+            <td><input type="checkbox" class="form-check-input sp-cb" data-tbl="partsTable"></td>
             <td><code>{{ part.part_code }}</code></td>
             <td class="fw-semibold">{{ part.name }}</td>
             <td><span class="badge bg-secondary">{{ part.category }}</span></td>
@@ -131,7 +141,7 @@
             </td>
           </tr>
           {% else %}
-          <tr><td colspan="9" class="text-center text-muted py-4">No parts registered.</td></tr>
+          <tr><td colspan="10" class="text-center text-muted py-4">No parts registered.</td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -140,16 +150,25 @@
 
   <!-- ── TAB 2: Stock In (Purchases) ── -->
   <div class="tab-pane fade p-0" id="stockinTab" role="tabpanel">
-    <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+    <div class="d-flex justify-content-between align-items-center p-3 border-bottom flex-wrap gap-2">
       <span class="text-muted small">Last {{ purchases|length }} purchase records</span>
-      <a href="/spare-parts/purchase" class="btn btn-success btn-sm">
-        <i class="bi bi-plus-circle me-1"></i>Record Purchase
-      </a>
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-outline-secondary btn-sm" onclick="spExport('purchasesTable',false)">
+          <i class="bi bi-file-earmark-arrow-down me-1"></i>Export All
+        </button>
+        <button id="expSel_purchasesTable" class="btn btn-outline-info btn-sm" onclick="spExport('purchasesTable',true)" disabled>
+          <i class="bi bi-download me-1"></i>Export Selected
+        </button>
+        <a href="/spare-parts/purchase" class="btn btn-success btn-sm">
+          <i class="bi bi-plus-circle me-1"></i>Record Purchase
+        </a>
+      </div>
     </div>
     <div class="table-responsive">
       <table id="purchasesTable" class="table table-hover mb-0 small">
         <thead class="table-dark">
           <tr>
+            <th><input type="checkbox" class="form-check-input sp-sa" data-tbl="purchasesTable"></th>
             <th>Part Name</th><th>Code</th><th>Qty</th>
             <th>Unit Price</th><th>Total</th><th>Supplier</th>
             <th>Invoice No</th><th>Date</th><th>Purchased By</th>
@@ -158,6 +177,7 @@
         <tbody>
           {% for purchase, part_name, part_code in purchases %}
           <tr>
+            <td><input type="checkbox" class="form-check-input sp-cb" data-tbl="purchasesTable"></td>
             <td class="fw-semibold">{{ part_name }}</td>
             <td><code>{{ part_code }}</code></td>
             <td><span class="badge bg-success">{{ purchase.qty }}</span></td>
@@ -169,7 +189,7 @@
             <td class="text-muted">{{ purchase.purchased_by or '—' }}</td>
           </tr>
           {% else %}
-          <tr><td colspan="9" class="text-center text-muted py-4">No purchases recorded.</td></tr>
+          <tr><td colspan="10" class="text-center text-muted py-4">No purchases recorded.</td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -178,16 +198,25 @@
 
   <!-- ── TAB 3: Consumption ── -->
   <div class="tab-pane fade p-0" id="consumptionTab" role="tabpanel">
-    <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+    <div class="d-flex justify-content-between align-items-center p-3 border-bottom flex-wrap gap-2">
       <span class="text-muted small">Last {{ consumptions|length }} consumption records</span>
-      <a href="/spare-parts/consume" class="btn btn-warning btn-sm">
-        <i class="bi bi-plus-circle me-1"></i>Record Consumption
-      </a>
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-outline-secondary btn-sm" onclick="spExport('consumptionTable',false)">
+          <i class="bi bi-file-earmark-arrow-down me-1"></i>Export All
+        </button>
+        <button id="expSel_consumptionTable" class="btn btn-outline-info btn-sm" onclick="spExport('consumptionTable',true)" disabled>
+          <i class="bi bi-download me-1"></i>Export Selected
+        </button>
+        <a href="/spare-parts/consume" class="btn btn-warning btn-sm">
+          <i class="bi bi-plus-circle me-1"></i>Record Consumption
+        </a>
+      </div>
     </div>
     <div class="table-responsive">
       <table id="consumptionTable" class="table table-hover mb-0 small">
         <thead class="table-dark">
           <tr>
+            <th><input type="checkbox" class="form-check-input sp-sa" data-tbl="consumptionTable"></th>
             <th>Part Name</th><th>Code</th><th>Qty Used</th>
             <th>Unit Cost</th><th>Total Cost</th>
             <th>Device Tag Number</th><th>Stage</th>
@@ -197,6 +226,7 @@
         <tbody>
           {% for consumption, part_name, part_code, device_barcode in consumptions %}
           <tr>
+            <td><input type="checkbox" class="form-check-input sp-cb" data-tbl="consumptionTable"></td>
             <td class="fw-semibold">{{ part_name }}</td>
             <td><code>{{ part_code }}</code></td>
             <td><span class="badge bg-warning text-dark">{{ consumption.qty_used }}</span></td>
@@ -218,7 +248,7 @@
             <td>{{ consumption.used_at.strftime('%d-%m-%Y') if consumption.used_at else '—' }}</td>
           </tr>
           {% else %}
-          <tr><td colspan="9" class="text-center text-muted py-4">No consumptions recorded.</td></tr>
+          <tr><td colspan="10" class="text-center text-muted py-4">No consumptions recorded.</td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -227,10 +257,21 @@
 
   <!-- ── TAB 4: Part Requests (#11/#14) ── -->
   <div class="tab-pane fade p-0" id="requestsTab" role="tabpanel">
-    <div class="p-3 border-bottom"><span class="text-muted small">{{ part_reqs|length }} part request(s) — Handover/Not-In-Stock enable based on Part Master stock vs requested qty</span></div>
+    <div class="d-flex justify-content-between align-items-center p-3 border-bottom flex-wrap gap-2">
+      <span class="text-muted small">{{ part_reqs|length }} part request(s) — Handover/Not-In-Stock enable based on Part Master stock vs requested qty</span>
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-outline-secondary btn-sm" onclick="spExport('partReqTable',false)">
+          <i class="bi bi-file-earmark-arrow-down me-1"></i>Export All
+        </button>
+        <button id="expSel_partReqTable" class="btn btn-outline-info btn-sm" onclick="spExport('partReqTable',true)" disabled>
+          <i class="bi bi-download me-1"></i>Export Selected
+        </button>
+      </div>
+    </div>
     <div class="table-responsive">
       <table id="partReqTable" class="table table-hover mb-0 small align-middle">
         <thead class="table-dark"><tr>
+          <th><input type="checkbox" class="form-check-input sp-sa" data-tbl="partReqTable"></th>
           <th>WorkID</th><th>Tag Number</th><th>Engineer</th><th>Part Name</th>
           <th>Qty Requested</th><th>Qty Handover</th><th>QTY Available</th><th>Action</th>
         </tr></thead>
@@ -239,6 +280,7 @@
           {% set stock = part_stock.get(r.part_id|string, 0) %}
           {% set sufficient = r.part_id and stock >= r.qty_requested %}
           <tr>
+            <td><input type="checkbox" class="form-check-input sp-cb" data-tbl="partReqTable"></td>
             <td class="font-monospace">{% if r.work_id %}<a href="/workid-status?highlight={{ r.work_id }}" class="text-decoration-none" title="View in WorkID Status">{{ r.work_id }}</a>{% else %}—{% endif %}</td>
             <td><a href="/devices/{{ r.barcode }}" class="font-monospace text-decoration-none">{{ r.barcode }}</a></td>
             <td>{{ r.engineer_name or r.requested_by or '—' }}</td>
@@ -269,7 +311,7 @@
             </td>
           </tr>
           {% else %}
-          <tr><td colspan="8" class="text-center text-muted py-4">No part requests.</td></tr>
+          <tr><td colspan="9" class="text-center text-muted py-4">No part requests.</td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -278,15 +320,27 @@
 
   <!-- ── TAB 5: Pending Requests For Part Sourcing (#15, synced read-only from CRM) ── -->
   <div class="tab-pane fade p-0" id="sourcingTab" role="tabpanel">
-    <div class="p-3 border-bottom"><span class="text-muted small">Pending Requests For Part Sourcing — synced with CRM Dashboard (read-only here)</span></div>
+    <div class="d-flex justify-content-between align-items-center p-3 border-bottom flex-wrap gap-2">
+      <span class="text-muted small">Pending Requests For Part Sourcing — synced with CRM Dashboard (read-only here)</span>
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-outline-secondary btn-sm" onclick="spExport('sourcingTable',false)">
+          <i class="bi bi-file-earmark-arrow-down me-1"></i>Export All
+        </button>
+        <button id="expSel_sourcingTable" class="btn btn-outline-info btn-sm" onclick="spExport('sourcingTable',true)" disabled>
+          <i class="bi bi-download me-1"></i>Export Selected
+        </button>
+      </div>
+    </div>
     <div class="table-responsive">
       <table id="sourcingTable" class="table table-hover mb-0 small">
         <thead class="table-dark"><tr>
+          <th><input type="checkbox" class="form-check-input sp-sa" data-tbl="sourcingTable"></th>
           <th>Status</th><th>Part Code</th><th>Part Name</th><th>Qty Requested</th><th>Qty Sourced</th><th>Raised By</th><th>Source Deal ID</th>
         </tr></thead>
         <tbody>
           {% for s in sourcing %}
           <tr>
+            <td><input type="checkbox" class="form-check-input sp-cb" data-tbl="sourcingTable"></td>
             <td>{% if s.status == 'closed' %}<span class="badge bg-success">Close</span>{% else %}<span class="badge bg-warning text-dark">Open</span>{% endif %}</td>
             <td><code>{{ s.part_code or '—' }}</code></td>
             <td class="fw-semibold">{{ s.part_name }}</td>
@@ -296,7 +350,7 @@
             <td>{{ s.source_deal_id or '—' }}</td>
           </tr>
           {% else %}
-          <tr><td colspan="7" class="text-center text-muted py-4">No sourcing requests.</td></tr>
+          <tr><td colspan="8" class="text-center text-muted py-4">No sourcing requests.</td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -332,11 +386,12 @@
 {% block scripts %}
 <script>
 $(document).ready(function() {
-  $('#partsTable').DataTable({ pageLength: 25, order: [[2, 'asc']] });
-  $('#purchasesTable').DataTable({ pageLength: 25, order: [[7, 'desc']] });
-  $('#consumptionTable').DataTable({ pageLength: 25, order: [[8, 'desc']] });
-  if ($('#partReqTable tbody tr td').length > 1) $('#partReqTable').DataTable({ pageLength: 25, order: [] });
-  if ($('#sourcingTable tbody tr td').length > 1) $('#sourcingTable').DataTable({ pageLength: 25, order: [] });
+  var cdNone = {orderable: false, targets: 0};
+  $('#partsTable').DataTable({ pageLength: 25, order: [[3, 'asc']], columnDefs: [cdNone] });
+  $('#purchasesTable').DataTable({ pageLength: 25, order: [[8, 'desc']], columnDefs: [cdNone] });
+  $('#consumptionTable').DataTable({ pageLength: 25, order: [[9, 'desc']], columnDefs: [cdNone] });
+  if ($('#partReqTable tbody tr td').length > 1) $('#partReqTable').DataTable({ pageLength: 25, order: [], columnDefs: [cdNone] });
+  if ($('#sourcingTable tbody tr td').length > 1) $('#sourcingTable').DataTable({ pageLength: 25, order: [], columnDefs: [cdNone] });
 });
 
 // Handover modal — populate from the clicked button's data-* attributes
@@ -361,6 +416,56 @@ document.querySelectorAll('#sparePartsTabs button').forEach(btn => {
   btn.addEventListener('shown.bs.tab', (e) => {
     localStorage.setItem(activeTabKey, e.target.getAttribute('data-bs-target'));
   });
+});
+
+// ── Export utility ─────────────────────────────────────────────────────────
+function spExport(tableId, selectedOnly) {
+  var table = document.getElementById(tableId);
+  if (!table) return;
+  var ths = Array.from(table.querySelectorAll('thead th'));
+  var lastTxt = ths[ths.length - 1].textContent.trim().toLowerCase();
+  var skipLast = (lastTxt === 'action' || lastTxt === 'actions');
+  var endIdx = skipLast ? ths.length - 1 : ths.length;
+  var headers = ths.slice(1, endIdx).map(function(th) {
+    return '"' + th.textContent.trim().replace(/"/g, '""') + '"';
+  });
+  var rows = [];
+  table.querySelectorAll('tbody tr').forEach(function(tr) {
+    if (tr.cells.length <= 1) return;
+    if (selectedOnly) {
+      var cb = tr.querySelector('input.sp-cb');
+      if (!cb || !cb.checked) return;
+    }
+    var cells = Array.from(tr.cells).slice(1, endIdx);
+    rows.push(cells.map(function(td) {
+      return '"' + td.textContent.trim().replace(/\s+/g, ' ').replace(/"/g, '""') + '"';
+    }).join(','));
+  });
+  if (!rows.length) { alert('No rows to export.'); return; }
+  var csv = [headers.join(',')].concat(rows).join('\r\n');
+  var a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent('﻿' + csv);
+  a.download = tableId + '.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+// ── Select-All checkboxes ──────────────────────────────────────────────────
+document.querySelectorAll('.sp-sa').forEach(function(sa) {
+  sa.addEventListener('change', function() {
+    var tbl = this.dataset.tbl;
+    document.querySelectorAll('#' + tbl + ' .sp-cb').forEach(function(c) { c.checked = sa.checked; });
+    var btn = document.getElementById('expSel_' + tbl);
+    if (btn) btn.disabled = !sa.checked;
+  });
+});
+
+// ── Row checkbox → enable/disable Export Selected ─────────────────────────
+document.addEventListener('change', function(e) {
+  if (!e.target.classList.contains('sp-cb')) return;
+  var tbl = e.target.dataset.tbl;
+  var anyChecked = document.querySelectorAll('#' + tbl + ' .sp-cb:checked').length > 0;
+  var btn = document.getElementById('expSel_' + tbl);
+  if (btn) btn.disabled = !anyChecked;
 });
 </script>
 {% endblock %}

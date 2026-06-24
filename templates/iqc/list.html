@@ -82,5 +82,5 @@
 </div>
 {% endblock %}
 {% block scripts %}
-<script>$(document).ready(function(){ $('#iqcTable').DataTable({pageLength:25}); });</script>
+<script>$(document).ready(function(){ $('#iqcTable').DataTable({pageLength:25, columnDefs:[{visible:false, targets:[9,10]}]}); });</script>
 {% endblock %}

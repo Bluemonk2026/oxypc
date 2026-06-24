@@ -74,5 +74,5 @@
 {% endif %}
 {% endblock %}
 {% block scripts %}
-<script>$(document).ready(function(){ $('#qcTable').DataTable({paging:false}); });</script>
+<script>$(document).ready(function(){ $('#qcTable').DataTable({paging:false, columnDefs:[{visible:false, targets:[8]}]}); });</script>
 {% endblock %}
