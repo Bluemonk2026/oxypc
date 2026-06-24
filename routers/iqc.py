@@ -216,15 +216,21 @@ async def diagnose_device(current_user: User = Depends(allowed)):
 
 @router.get("/agent-installer")
 async def agent_installer(current_user: User = Depends(allowed)):
-    """Download the single self-installing OxyQC Diagnose Agent exe. Running it
+    """Download the single self-installing Diagnose_Device_Agent exe. Running it
     once (no admin) copies it to %LOCALAPPDATA%, registers per-user autostart, and
     starts serving — so the 'Diagnose this Device' button works from then on."""
     import os
     from fastapi.responses import FileResponse
-    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "downloads", "OxyQC_Agent.exe")
+    base = os.path.join(os.path.dirname(os.path.dirname(__file__)), "downloads")
+    path = os.path.join(base, "Diagnose_Device_Agent.exe")
     if not os.path.exists(path):
-        raise HTTPException(404, "Agent exe not packaged on this server")
-    return FileResponse(path, filename="OxyQC_Agent.exe", media_type="application/octet-stream")
+        # fall back to the legacy name if the renamed build isn't deployed yet
+        legacy = os.path.join(base, "OxyQC_Agent.exe")
+        if os.path.exists(legacy):
+            path = legacy
+        else:
+            raise HTTPException(404, "Agent exe not packaged on this server")
+    return FileResponse(path, filename="Diagnose_Device_Agent.exe", media_type="application/octet-stream")
 
 
 @router.get("/usb-import")
@@ -476,12 +482,12 @@ async def iqc_create(
         serial_no=serial_no or None,
         grn_number=grn_number or None,
         cpu=cpu or None, generation=generation or None,
-        ram_gb=int(ram_gb) if ram_gb else None,
-        storage_gb=int(storage_gb) if storage_gb else None,
+        ram_gb=int(ram_gb) if (ram_gb or "").strip().isdigit() else None,
+        storage_gb=int(storage_gb) if (storage_gb or "").strip().isdigit() else None,
         storage_type=storage_type or None,
-        hdd_capacity_gb=int(hdd_capacity_gb) if hdd_capacity_gb else None,
+        hdd_capacity_gb=int(hdd_capacity_gb) if (hdd_capacity_gb or "").strip().isdigit() else None,
         screen_size=screen_size or None,
-        battery_health_pct=int(battery_health_pct) if battery_health_pct else None,
+        battery_health_pct=int(battery_health_pct) if (battery_health_pct or "").strip().isdigit() else None,
         bios_password=(bios_password == "yes"),
         color=color or None,
         grade=grade or None, current_stage=DeviceStage.iqc,

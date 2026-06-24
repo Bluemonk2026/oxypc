@@ -512,12 +512,13 @@ async def device_edit_save(
     device.grn_number = grn_number or None
     device.cpu = cpu or None
     device.generation = generation or None
-    device.ram_gb = int(ram_gb) if ram_gb else None
-    device.storage_gb = int(storage_gb) if storage_gb else None
+    # int-or-None: tolerates non-numeric dropdown values like "Not Available" / "Not Checked"
+    device.ram_gb = int(ram_gb) if (ram_gb or "").strip().isdigit() else None
+    device.storage_gb = int(storage_gb) if (storage_gb or "").strip().isdigit() else None
     device.storage_type = storage_type or None
-    device.hdd_capacity_gb = int(hdd_capacity_gb) if hdd_capacity_gb else None
+    device.hdd_capacity_gb = int(hdd_capacity_gb) if (hdd_capacity_gb or "").strip().isdigit() else None
     device.screen_size = screen_size or None
-    device.battery_health_pct = int(battery_health_pct) if battery_health_pct else None
+    device.battery_health_pct = int(battery_health_pct) if (battery_health_pct or "").strip().isdigit() else None
     device.bios_password = (bios_password == "yes")
     device.color = color or None
     if grade:
@@ -542,13 +543,42 @@ async def device_edit_save(
             pass
     device.updated_at = app_now()
 
-    # Internal Battery is stored on the device's IQC inspection (drives the Battery
-    # part-required flag on the Parts Consumption section). Update it if one exists.
+    # ── IQC condition fields → update (or create) the device's IQC inspection. ──
+    # The Edit Device form mirrors the IQC Entry form, so all condition / panel /
+    # port fields are submitted here and persisted on IQCInspection (Device holds
+    # the hardware-spec fields handled above).
     iqc_inspection = (await db.execute(
         select(IQCInspection).where(IQCInspection.device_id == device.id)
     )).scalar_one_or_none()
-    if iqc_inspection is not None:
-        iqc_inspection.battery_present = battery_present or None
+    if iqc_inspection is None:
+        iqc_inspection = IQCInspection(device_id=device.id)
+        db.add(iqc_inspection)
+    _form = await request.form()
+    _IQC_STR_FIELDS = [
+        "battery_present", "battery_cable", "power_on", "status", "all_ok", "r2v3_grade_category",
+        "keyboard_working", "touchpad_working", "port_hdmi", "port_usb_working", "port_audio_jack",
+        "speaker_status", "wifi_status", "webcam_status", "hdd_connector", "hdd_casing", "dvd_drive",
+        "screen_dot", "screen_line", "screen_functional", "screen_discoloration", "screen_patch",
+        "screen_broken", "screen_flickering", "screen_scratch", "screen_loose", "screen_missing",
+        "screen_hinge_broken", "screen_colour_spread", "screen_keyboard_mark",
+        "panel_a_scratch", "panel_a_broken", "panel_a_missing", "panel_a_dent", "panel_a_colour_fade",
+        "panel_b_scratch", "panel_b_colour_fade", "panel_b_rubber_cut", "panel_b_broken", "panel_b_missing",
+        "panel_c_scratch", "panel_c_broken", "panel_c_missing", "panel_c_dent", "panel_c_colour_fade",
+        "panel_d_dent", "panel_d_colour_fade", "panel_d_scratch", "panel_d_broken", "panel_d_missing",
+        "keyboard_colour_fade", "keyboard_key_missing", "keyboard_hard_press",
+        "touchpad_click_working", "touchpad_scratch", "touchpad_colour_fade", "touchpad_missing",
+    ]
+    _IQC_INT_FIELDS = ["usb_a_ports", "usb_c_ports", "ethernet_ports"]
+    for _f in _IQC_STR_FIELDS:
+        if _f in _form:
+            setattr(iqc_inspection, _f, (_form.get(_f) or None))
+    for _f in _IQC_INT_FIELDS:
+        if _f in _form:
+            _v = (_form.get(_f) or "").strip()
+            try:
+                setattr(iqc_inspection, _f, int(_v) if _v else None)
+            except (ValueError, TypeError):
+                setattr(iqc_inspection, _f, None)
 
     await db.commit()
     return RedirectResponse(

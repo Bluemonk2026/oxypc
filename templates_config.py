@@ -36,6 +36,17 @@ templates.env.filters["ist_date"]     = ist_date      # {{ dt | ist_date }}
 templates.env.filters["ist_time"]     = ist_time      # {{ dt | ist_time }}
 templates.env.filters["ist_datetime"] = ist_datetime  # {{ dt | ist_datetime }}
 
-# ── Permission helper — usable in any template as has_perm(role, module, action) ──
+# ── Permission helpers — usable in any template ──
+#   has_perm(role, module, action)  → single-module check (matrix-driven)
+#   any_perm(role, *modules)        → True if ANY listed module is enabled
+#                                      (used to show a nav SECTION header only when
+#                                       at least one of its modules is visible).
 from models.role_permissions import has_perm as _has_perm
+
+
+def _any_perm(role, *modules):
+    return any(_has_perm(role, m, "enable") for m in modules)
+
+
 templates.env.globals["has_perm"] = _has_perm
+templates.env.globals["any_perm"] = _any_perm

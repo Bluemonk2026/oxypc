@@ -64,4 +64,4 @@ Thumbs.db
 # Agent installer bundle — ignore the folder but TRACK the agent exe so the
 # IQC "Download & run the OxyQC Agent" link works on GitHub builds / deploys.
 downloads/*
-!downloads/OxyQC_Agent.exe
+!downloads/Diagnose_Device_Agent.exe

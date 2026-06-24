@@ -2,6 +2,7 @@
 {% block title %}Edit {{ device.barcode }} — OxyPC{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css">
+<style>.sec-hd{ color:#1a56db !important; }</style>
 {% endblock %}
 {% block page_title %}Edit Device{% endblock %}
 {% block content %}
@@ -34,7 +35,7 @@
         <form action="/devices/{{ device.barcode }}/edit" method="post">
 
           <!-- ── Section 1: Identity ── -->
-          <p class="text-muted fw-semibold small text-uppercase mb-2 border-bottom pb-1">Identity</p>
+          <p class="fw-bold small text-uppercase mb-2 border-bottom pb-1 sec-hd">Identity</p>
           <div class="row g-3 mb-3">
             <div class="col-md-4">
               <label class="form-label fw-semibold">Tag Number <span class="text-danger">*</span></label>
@@ -59,11 +60,6 @@
               <input type="text" name="grn_number" class="form-control font-monospace bg-light"
                      value="{{ device.grn_number or '' }}" placeholder="e.g. GRN-2024-001" readonly tabindex="-1">
             </div>
-            <div class="col-md-4">
-              <label class="form-label">Serial No.</label>
-              <input type="text" name="serial_no" class="form-control font-monospace"
-                     value="{{ device.serial_no or '' }}" placeholder="Serial number">
-            </div>
             <div class="col-md-4 d-none">
               <label class="form-label">Sub-Category</label>
               <select name="sub_category" class="form-select">
@@ -75,130 +71,218 @@
             </div>
           </div>
 
-          <!-- ── Section 2: Brand & Model ── -->
-          <p class="text-muted fw-semibold small text-uppercase mb-2 border-bottom pb-1">Brand &amp; Model</p>
-          <div class="row g-3 mb-3">
-            <div class="col-md-4">
-              <label class="form-label">Device Type</label>
-              <select name="device_type" class="form-select">
-                <option value="">-- Select --</option>
-                {% for opt in ['Laptop','Desktop','AIO','Workstation','Mini PC','Server','Tablet'] %}
-                <option {% if device.device_type == opt %}selected{% endif %}>{{ opt }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Brand / Make</label>
-              <select name="brand" id="edit-brand-select" class="form-select">
-                <option value="">-- Select --</option>
-                {% for opt in ['HP','Dell','Lenovo','Acer','Asus','Apple','Samsung','Toshiba','MSI','Microsoft','LG','Compaq','Other'] %}
-                <option {% if device.brand == opt %}selected{% endif %}>{{ opt }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Model</label>
-              <input type="text" name="model" class="form-control"
-                     value="{{ device.model or '' }}" placeholder="e.g. ThinkPad T480">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Color</label>
-              <input type="text" name="color" class="form-control"
-                     value="{{ device.color or '' }}" placeholder="Black / Silver / Dark Grey">
-            </div>
-          </div>
+          {% set ii = iqc_inspection %}
+          {% set yn = ['Yes','No'] %}
+          {% set yn3 = ['Yes','Not Working','No'] %}
+          {% set scratch_opts = ['No','Minor Scratch','Major Scratch'] %}
+          {% set dent_opts = ['No','Yes','Major Dent'] %}
+          {% set broken_opts = ['No','Yes','Major Broken'] %}
+          {% macro isel(name, opts, cls='form-select form-select-sm') %}{% set cur = (ii|attr(name)) if ii else None %}<select name="{{ name }}" class="{{ cls }}">
+                <option value="">—</option>{% if cur is not none and (cur|string) and (cur|string) not in (opts|map('string')|list) %}<option selected>{{ cur }}</option>{% endif %}{% for o in opts %}<option {% if cur is not none and cur|string == o|string %}selected{% endif %}>{{ o }}</option>{% endfor %}
+              </select>{% endmacro %}
 
-          <!-- ── Section 3: Hardware Specs ── -->
-          <p class="text-muted fw-semibold small text-uppercase mb-2 border-bottom pb-1">Hardware Specifications</p>
-          <div class="row g-3 mb-3">
-            <div class="col-md-4">
-              <label class="form-label">CPU / Processor</label>
+          <!-- ── HARDWARE SPECIFICATION (editable) ── -->
+          <p class="fw-bold small text-uppercase mb-2 border-bottom pb-1 sec-hd"><i class="bi bi-cpu me-1"></i>Hardware Specification</p>
+          <div class="row g-2 mb-3">
+            <div class="col-md-3">
+              <label class="form-label small">Serial Number</label>
+              <input type="text" name="serial_no" class="form-control form-control-sm font-monospace" value="{{ device.serial_no or '' }}" placeholder="Serial number">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small">Device Type</label>
+              <select name="device_type" class="form-select form-select-sm">
+                <option value="">—</option>
+                {% for opt in ['Laptop','Desktop','AIO','Workstation','Mini PC','Server','Tablet'] %}<option {% if device.device_type == opt %}selected{% endif %}>{{ opt }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small">Brand / Make</label>
+              <select name="brand" id="edit-brand-select" class="form-select form-select-sm">
+                <option value="">—</option>
+                {% for opt in ['HP','Dell','Lenovo','Acer','Asus','Apple','Samsung','Toshiba','MSI','Microsoft','LG','Compaq','Other'] %}<option {% if device.brand == opt %}selected{% endif %}>{{ opt }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small">Model</label>
+              <input type="text" name="model" class="form-control form-control-sm" value="{{ device.model or '' }}" placeholder="e.g. ThinkPad T480">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small">CPU / Processor</label>
               {% set cpu_opts = ['Intel Core i3','Intel Core i5','Intel Core i7','Intel Core i9','Intel Core Ultra 5','Intel Core Ultra 7','Intel Celeron','Intel Pentium','AMD Ryzen 3','AMD Ryzen 5','AMD Ryzen 7','AMD Ryzen 9','Apple M1','Apple M2','Apple M3','Apple M4','Other'] %}
-              <select name="cpu" class="form-select">
+              <select name="cpu" class="form-select form-select-sm">
                 <option value="">Not Available</option>
                 {% if device.cpu and device.cpu not in cpu_opts %}<option value="{{ device.cpu }}" selected>{{ device.cpu }}</option>{% endif %}
-                {% for o in cpu_opts %}<option value="{{ o }}" {% if device.cpu == o %}selected{% endif %}>{{ o }}</option>{% endfor %}
+                {% for o in cpu_opts %}<option {% if device.cpu == o %}selected{% endif %}>{{ o }}</option>{% endfor %}
               </select>
             </div>
-            <div class="col-md-4">
-              <label class="form-label">Generation</label>
-              <select name="generation" class="form-select">
+            <div class="col-md-3">
+              <label class="form-label small">Generation</label>
+              <select name="generation" class="form-select form-select-sm">
                 <option value="">Not Available</option>
-                {% for opt in ['4th Gen','5th Gen','6th Gen','7th Gen','8th Gen','9th Gen','10th Gen','11th Gen','12th Gen','13th Gen','14th Gen','AMD Ryzen 3','AMD Ryzen 5','AMD Ryzen 7'] %}
-                <option {% if device.generation == opt %}selected{% endif %}>{{ opt }}</option>
-                {% endfor %}
+                {% for opt in ['4th Gen','5th Gen','6th Gen','7th Gen','8th Gen','9th Gen','10th Gen','11th Gen','12th Gen','13th Gen','14th Gen','AMD Ryzen 3','AMD Ryzen 5','AMD Ryzen 7'] %}<option {% if device.generation == opt %}selected{% endif %}>{{ opt }}</option>{% endfor %}
               </select>
             </div>
-            <div class="col-md-4">
-              <label class="form-label">RAM (GB)</label>
-              <select name="ram_gb" class="form-select">
+            <div class="col-md-3">
+              <label class="form-label small">RAM (GB)</label>
+              <select name="ram_gb" class="form-select form-select-sm">
                 <option value="">Not Available</option>
-                {% for opt in [2,4,8,12,16,24,32,64] %}
-                <option value="{{ opt }}" {% if device.ram_gb == opt %}selected{% endif %}>{{ opt }}</option>
-                {% endfor %}
+                {% for opt in [2,4,8,12,16,24,32,64] %}<option value="{{ opt }}" {% if device.ram_gb == opt %}selected{% endif %}>{{ opt }}</option>{% endfor %}
               </select>
             </div>
-            <div class="col-md-4">
-              <label class="form-label">SSD Capacity (GB)</label>
-              <select name="storage_gb" class="form-select">
+            <div class="col-md-3">
+              <label class="form-label small">SSD Capacity (GB)</label>
+              <select name="storage_gb" class="form-select form-select-sm">
                 <option value="">Not Available</option>
-                {% for opt in [128,240,256,480,512,1000,2000] %}
-                <option value="{{ opt }}" {% if device.storage_gb == opt %}selected{% endif %}>{{ opt }}</option>
-                {% endfor %}
+                {% for opt in [128,240,256,320,480,512,960,1000,2000] %}<option value="{{ opt }}" {% if device.storage_gb == opt %}selected{% endif %}>{{ opt }}</option>{% endfor %}
               </select>
             </div>
-            <div class="col-md-4">
-              <label class="form-label">Storage Type</label>
-              <select name="storage_type" class="form-select">
+            <div class="col-md-3">
+              <label class="form-label small">Storage Type</label>
+              <select name="storage_type" class="form-select form-select-sm">
                 <option value="">Not Available</option>
-                {% for opt in ['SSD','NVMe SSD','HDD','eMMC','SSHD (Hybrid)'] %}
-                <option {% if device.storage_type == opt %}selected{% endif %}>{{ opt }}</option>
-                {% endfor %}
+                {% for opt in ['SSD','NVMe SSD','HDD','eMMC','SSHD (Hybrid)'] %}<option {% if device.storage_type == opt %}selected{% endif %}>{{ opt }}</option>{% endfor %}
               </select>
             </div>
-            <div class="col-md-4">
-              <label class="form-label">HDD Capacity (GB) <small class="text-muted">if dual</small></label>
-              <select name="hdd_capacity_gb" class="form-select">
+            <div class="col-md-3">
+              <label class="form-label small">HDD Capacity (GB)</label>
+              <select name="hdd_capacity_gb" class="form-select form-select-sm">
                 <option value="">Not Available</option>
-                {% for opt in [320,500,750,1000,2000] %}
-                <option value="{{ opt }}" {% if device.hdd_capacity_gb == opt %}selected{% endif %}>{{ opt }}</option>
-                {% endfor %}
+                {% for opt in [320,500,750,1000,2000] %}<option value="{{ opt }}" {% if device.hdd_capacity_gb == opt %}selected{% endif %}>{{ opt }}</option>{% endfor %}
               </select>
             </div>
-            <div class="col-md-4">
-              <label class="form-label">Screen Size</label>
-              <select name="screen_size" class="form-select">
+            <div class="col-md-3">
+              <label class="form-label small">Screen Size</label>
+              <select name="screen_size" class="form-select form-select-sm">
                 <option value="">Unknown</option>
-                {% for opt in ['11.6"','12.5"','13.3"','14.0"','14.0" FHD','15.6"','15.6" FHD','17.3"','18.5"','21.5"','24"'] %}
-                <option {% if device.screen_size == opt %}selected{% endif %}>{{ opt }}</option>
-                {% endfor %}
+                {% for opt in ['11.6"','12.5"','13.3"','14.0"','14.0" FHD','15.6"','15.6" FHD','17.3"','18.5"','21.5"','24"'] %}<option {% if device.screen_size == opt %}selected{% endif %}>{{ opt }}</option>{% endfor %}
               </select>
             </div>
-            <div class="col-md-4">
-              <label class="form-label">Battery Health % <small class="text-muted">Laptops</small></label>
-              <input type="number" name="battery_health_pct" class="form-control"
-                     value="{{ device.battery_health_pct or '' }}" placeholder="e.g. 85" min="0" max="100">
+            <div class="col-md-3">
+              <label class="form-label small">Battery Health %</label>
+              <input type="number" name="battery_health_pct" class="form-control form-control-sm" value="{{ device.battery_health_pct or '' }}" min="0" max="100" placeholder="e.g. 85">
             </div>
-            <div class="col-md-4">
-              <label class="form-label">Internal Battery</label>
-              {% set _bp = iqc_inspection.battery_present if iqc_inspection else '' %}
-              <select name="battery_present" class="form-select">
-                <option value="">—</option>
-                {% for o in ['Yes','No'] %}<option {% if _bp == o %}selected{% endif %}>{{ o }}</option>{% endfor %}
-              </select>
+            <div class="col-md-3"><label class="form-label small">Internal Battery</label>{{ isel('battery_present', yn) }}</div>
+            <div class="col-md-3"><label class="form-label small">Battery Cable</label>{{ isel('battery_cable', yn3) }}</div>
+            <div class="col-md-3"><label class="form-label small">Does the Laptop Switch On?</label>{{ isel('power_on', yn) }}</div>
+            <div class="col-md-3"><label class="form-label small">Power Status</label>{{ isel('status', ['Power On','No Display','No Power/Power Cut(Motherboard)']) }}</div>
+            <div class="col-md-3"><label class="form-label small">Keyboard Working?</label>{{ isel('keyboard_working', yn3) }}</div>
+            <div class="col-md-3"><label class="form-label small">Touchpad Working?</label>{{ isel('touchpad_working', yn3) }}</div>
+            <div class="col-md-3"><label class="form-label small">HDMI Port Working?</label>{{ isel('port_hdmi', yn3) }}</div>
+            <div class="col-md-3"><label class="form-label small">USB Ports Working?</label>{{ isel('port_usb_working', yn3) }}</div>
+            <div class="col-md-3"><label class="form-label small">Audio Jack Working?</label>{{ isel('port_audio_jack', yn3) }}</div>
+            <div class="col-md-3">
+              <label class="form-label small">USB-A Ports</label>
+              <input type="number" name="usb_a_ports" class="form-control form-control-sm" value="{{ ii.usb_a_ports if ii and ii.usb_a_ports is not none else '' }}" min="0" max="20" placeholder="count">
             </div>
-            <div class="col-md-4 d-flex align-items-end">
+            <div class="col-md-3">
+              <label class="form-label small">USB-C Ports</label>
+              <input type="number" name="usb_c_ports" class="form-control form-control-sm" value="{{ ii.usb_c_ports if ii and ii.usb_c_ports is not none else '' }}" min="0" max="20" placeholder="count">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small">Ethernet Ports</label>
+              <input type="number" name="ethernet_ports" class="form-control form-control-sm" value="{{ ii.ethernet_ports if ii and ii.ethernet_ports is not none else '' }}" min="0" max="8" placeholder="count">
+            </div>
+            <div class="col-md-3"><label class="form-label small">Speaker Status</label>{{ isel('speaker_status', ['Both speakers working','Both speakers faulty','Left speaker faulty','Right speaker faulty']) }}</div>
+            <div class="col-md-3"><label class="form-label small">Wi-Fi</label>{{ isel('wifi_status', ['Working','Faulty','Not Checked']) }}</div>
+            <div class="col-md-3"><label class="form-label small">Web Cam</label>{{ isel('webcam_status', ['Ok','Faulty','Not Checked']) }}</div>
+            <div class="col-md-3"><label class="form-label small">HDD Connector</label>{{ isel('hdd_connector', yn3) }}</div>
+            <div class="col-md-3"><label class="form-label small">HDD Casing</label>{{ isel('hdd_casing', yn3) }}</div>
+            <div class="col-md-3"><label class="form-label small">DVD Drive</label>{{ isel('dvd_drive', ['Yes','No','NA']) }}</div>
+          </div>
+
+          <!-- ── Inspection Details ── -->
+          <p class="fw-bold small text-uppercase mb-2 border-bottom pb-1 sec-hd">Inspection Details</p>
+          <div class="row g-2 mb-3">
+            <div class="col-md-3">
+              <label class="form-label small">Color</label>
+              <input type="text" name="color" class="form-control form-control-sm" value="{{ device.color or '' }}" placeholder="Black / Silver / Dark Grey">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
               <div class="form-check ms-2 mb-2">
-                <input type="checkbox" name="bios_password" value="yes" class="form-check-input" id="biosPwd"
-                       {% if device.bios_password %}checked{% endif %}>
+                <input type="checkbox" name="bios_password" value="yes" class="form-check-input" id="biosPwd" {% if device.bios_password %}checked{% endif %}>
                 <label class="form-check-label" for="biosPwd">BIOS Password Set?</label>
               </div>
             </div>
           </div>
+          <div class="row g-2 mb-3">
+            <div class="col-md-2"><label class="form-label small">Dot</label>{{ isel('screen_dot', yn) }}</div>
+            <div class="col-md-2"><label class="form-label small">Line</label>{{ isel('screen_line', yn) }}</div>
+            <div class="col-md-2"><label class="form-label small">Functional</label>{{ isel('screen_functional', yn) }}</div>
+            <div class="col-md-2"><label class="form-label small">Colour Discoloration</label>{{ isel('screen_discoloration', yn) }}</div>
+            <div class="col-md-2"><label class="form-label small">Patch</label>{{ isel('screen_patch', yn) }}</div>
+            <div class="col-md-2"><label class="form-label small">Broken</label>{{ isel('screen_broken', yn) }}</div>
+            <div class="col-md-2"><label class="form-label small">Flickering</label>{{ isel('screen_flickering', yn) }}</div>
+            <div class="col-md-2"><label class="form-label small">Scratch</label>{{ isel('screen_scratch', scratch_opts) }}</div>
+            <div class="col-md-2"><label class="form-label small">Loose</label>{{ isel('screen_loose', yn) }}</div>
+            <div class="col-md-2"><label class="form-label small">Missing</label>{{ isel('screen_missing', yn) }}</div>
+            <div class="col-md-2"><label class="form-label small">Hinge Broken</label>{{ isel('screen_hinge_broken', yn) }}</div>
+            <div class="col-md-2"><label class="form-label small">Colour Spread</label>{{ isel('screen_colour_spread', yn) }}</div>
+            <div class="col-md-2"><label class="form-label small">Keyboard Mark</label>{{ isel('screen_keyboard_mark', yn) }}</div>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-md-2"><label class="form-label small">Keyboard Colour Fade</label>{{ isel('keyboard_colour_fade', yn) }}</div>
+            <div class="col-md-2"><label class="form-label small">Key Missing</label>{{ isel('keyboard_key_missing', yn) }}</div>
+            <div class="col-md-2"><label class="form-label small">Keyboard Hard Press</label>{{ isel('keyboard_hard_press', yn) }}</div>
+            <div class="col-md-2"><label class="form-label small">Click Function Working?</label>{{ isel('touchpad_click_working', yn) }}</div>
+            <div class="col-md-2"><label class="form-label small">Touchpad Scratch</label>{{ isel('touchpad_scratch', scratch_opts) }}</div>
+            <div class="col-md-2"><label class="form-label small">Touchpad Colour Fade</label>{{ isel('touchpad_colour_fade', yn) }}</div>
+            <div class="col-md-2"><label class="form-label small">Touchpad Missing</label>{{ isel('touchpad_missing', yn) }}</div>
+          </div>
 
-          <!-- ── Section 4: Condition & Location ── -->
-          <p class="text-muted fw-semibold small text-uppercase mb-2 border-bottom pb-1">Condition &amp; Location</p>
+          <!-- ── Body Panels ── -->
+          <p class="fw-bold small text-uppercase mb-2 border-bottom pb-1 sec-hd">Body Panels</p>
+          <div class="card border bg-light mb-2"><div class="card-body py-2">
+            <p class="small fw-semibold text-uppercase mb-2 text-primary">Panel A — LCD Lid / Top Cover</p>
+            <div class="row g-2">
+              <div class="col-md-2"><label class="form-label small">Scratch</label>{{ isel('panel_a_scratch', scratch_opts) }}</div>
+              <div class="col-md-2"><label class="form-label small">Broken / Crack</label>{{ isel('panel_a_broken', broken_opts) }}</div>
+              <div class="col-md-2"><label class="form-label small">Missing</label>{{ isel('panel_a_missing', yn) }}</div>
+              <div class="col-md-2"><label class="form-label small">Dent</label>{{ isel('panel_a_dent', dent_opts) }}</div>
+              <div class="col-md-2"><label class="form-label small">Colour Fade</label>{{ isel('panel_a_colour_fade', yn) }}</div>
+            </div>
+          </div></div>
+          <div class="card border bg-light mb-2"><div class="card-body py-2">
+            <p class="small fw-semibold text-uppercase mb-2 text-success">Panel B — Bottom Base</p>
+            <div class="row g-2">
+              <div class="col-md-2"><label class="form-label small">Scratch</label>{{ isel('panel_b_scratch', scratch_opts) }}</div>
+              <div class="col-md-2"><label class="form-label small">Broken / Crack</label>{{ isel('panel_b_broken', broken_opts) }}</div>
+              <div class="col-md-2"><label class="form-label small">Missing</label>{{ isel('panel_b_missing', yn) }}</div>
+              <div class="col-md-2"><label class="form-label small">Colour Fade</label>{{ isel('panel_b_colour_fade', yn) }}</div>
+              <div class="col-md-2"><label class="form-label small">Rubber Cut</label>{{ isel('panel_b_rubber_cut', yn) }}</div>
+            </div>
+          </div></div>
+          <div class="card border bg-light mb-2"><div class="card-body py-2">
+            <p class="small fw-semibold text-uppercase mb-2 text-warning">Panel C — Bezel / Frame</p>
+            <div class="row g-2">
+              <div class="col-md-2"><label class="form-label small">Scratch</label>{{ isel('panel_c_scratch', scratch_opts) }}</div>
+              <div class="col-md-2"><label class="form-label small">Broken / Crack</label>{{ isel('panel_c_broken', broken_opts) }}</div>
+              <div class="col-md-2"><label class="form-label small">Missing</label>{{ isel('panel_c_missing', yn) }}</div>
+              <div class="col-md-2"><label class="form-label small">Dent</label>{{ isel('panel_c_dent', dent_opts) }}</div>
+              <div class="col-md-2"><label class="form-label small">Colour Fade</label>{{ isel('panel_c_colour_fade', yn) }}</div>
+            </div>
+          </div></div>
+          <div class="card border bg-light mb-3"><div class="card-body py-2">
+            <p class="small fw-semibold text-uppercase mb-2 text-danger">Panel D — Palmrest</p>
+            <div class="row g-2">
+              <div class="col-md-2"><label class="form-label small">Scratch</label>{{ isel('panel_d_scratch', scratch_opts) }}</div>
+              <div class="col-md-2"><label class="form-label small">Broken / Crack</label>{{ isel('panel_d_broken', broken_opts) }}</div>
+              <div class="col-md-2"><label class="form-label small">Missing</label>{{ isel('panel_d_missing', yn) }}</div>
+              <div class="col-md-2"><label class="form-label small">Dent</label>{{ isel('panel_d_dent', dent_opts) }}</div>
+              <div class="col-md-2"><label class="form-label small">Colour Fade</label>{{ isel('panel_d_colour_fade', yn) }}</div>
+            </div>
+          </div></div>
+
+          <!-- ── Section: Condition & Location ── -->
+          <p class="fw-bold small text-uppercase mb-2 border-bottom pb-1 sec-hd">Condition &amp; Location</p>
           <div class="row g-3 mb-3">
+            <div class="col-md-2">
+              <label class="form-label">All OK?</label>
+              {{ isel('all_ok', yn, 'form-select') }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">R2V3 Grade Category</label>
+              {{ isel('r2v3_grade_category', ['C0','C3','C4','C5'], 'form-select') }}
+            </div>
             <div class="col-md-2">
               <label class="form-label">Quantity</label>
               <input type="number" name="qty" class="form-control" min="1"
@@ -394,6 +478,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   inp.addEventListener('input', function(){ clearTimeout(t); t=setTimeout(check, 350); });
   inp.addEventListener('change', check);
+})();
+</script>
+<script>
+/* Append "Not Available" then "Not Checked" (last) to the hardware dropdowns. */
+(function(){
+  var NC = ['cpu','generation','ram_gb','storage_gb','storage_type','hdd_capacity_gb','screen_size','battery_present','battery_cable','power_on','status','keyboard_working','touchpad_working','port_hdmi','port_usb_working','port_audio_jack','speaker_status','wifi_status','webcam_status','hdd_connector','hdd_casing','dvd_drive'];
+  var EXTRA = ['Not Available','Not Checked'];
+  NC.forEach(function(n){
+    var el = document.querySelector('select[name="'+n+'"]'); if(!el) return;
+    var cur = el.value;
+    Array.prototype.slice.call(el.options).forEach(function(o){ if(EXTRA.indexOf(o.text.trim())>=0) o.remove(); });
+    EXTRA.forEach(function(t){ el.add(new Option(t,t)); });
+    el.value = cur;
+  });
 })();
 </script>
 {% endblock %}
