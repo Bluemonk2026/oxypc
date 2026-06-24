@@ -3,7 +3,7 @@
 {% block page_title %}Ready to Dispatch{% endblock %}
 {% block content %}
 
-{% set GRADES = [('A','success'),('B','warning text-dark'),('C','danger'),('D','secondary')] %}
+{% set GRADES = [('A','success'),('B','warning text-dark'),('C','danger')] %}
 
 <!-- Count cards (#7): per-grade total + Dispatched / Pending / Sold -->
 <div class="row g-3 mb-3">
@@ -48,7 +48,7 @@
 
 {% macro grade_rows(label, items) %}
 <div class="table-responsive">
-<table class="table table-hover mb-0 small">
+<table id="gradeTable{{ label }}" class="table table-hover mb-0 small">
   <thead class="table-light"><tr>
     <th class="ps-3">Tag Number</th><th>Model Name</th><th>Lot</th><th>Quantities</th>
     <th>Dispatched</th><th>Pending</th><th>Sold</th>
@@ -67,8 +67,6 @@
       <td>{% if it.timeline is not none %}<span class="badge bg-light text-dark border">{{ it.timeline }} day{{ 's' if it.timeline != 1 else '' }}</span>{% else %}—{% endif %}</td>
       <td>{% if it.warranty %}<span class="badge bg-{{ 'success' if it.warranty_status == 'active' else 'secondary' }}">{{ it.warranty }}</span>{% else %}<span class="text-muted">—</span>{% endif %}</td>
     </tr>
-    {% else %}
-    <tr><td colspan="9" class="text-center text-muted py-3">No {{ label }} grade devices.</td></tr>
     {% endfor %}
   </tbody>
 </table>
@@ -118,10 +116,7 @@
             {% else %}<span class="badge bg-warning text-dark">Requested</span>{% endif %}
           </td>
         </tr>
-        {% else %}
-        <tr id="tcEmptyRow"><td colspan="5" class="text-center text-muted py-3">No telecaller requests.</td></tr>
         {% endfor %}
-        <tr id="tcNoMatchRow" class="d-none"><td colspan="5" class="text-center text-muted py-3">No matching requests.</td></tr>
       </tbody>
     </table>
   </div>
@@ -151,36 +146,51 @@
 </div>
 {% endmacro %}
 <div class="row g-3 mb-3">
-  <div class="col-lg-6">{{ grade_accordion('gradeAccordionL', GRADES[:2]) }}</div>
-  <div class="col-lg-6">{{ grade_accordion('gradeAccordionR', GRADES[2:]) }}</div>
+  <div class="col-lg-6">{{ grade_accordion('gradeAccordionA', GRADES[0:1]) }}</div>
+  <div class="col-lg-6">{{ grade_accordion('gradeAccordionB', GRADES[1:2]) }}</div>
+</div>
+<div class="row g-3 mb-3">
+  <div class="col-12">{{ grade_accordion('gradeAccordionC', GRADES[2:3]) }}</div>
 </div>
 
 {% endblock %}
 {% block scripts %}
 <script>
-(function(){
-  var filterSel = document.getElementById('tcFilter');
-  var searchBox = document.getElementById('tcSearch');
-  var table = document.getElementById('tcRequestsTable');
-  if (!table) return;
-  var noMatch = document.getElementById('tcNoMatchRow');
-
-  function applyFilter(){
-    var tc = (filterSel ? filterSel.value : '');
-    var q = (searchBox ? searchBox.value.trim().toLowerCase() : '');
-    var rows = table.querySelectorAll('tbody tr[data-barcode]');
-    var visible = 0;
-    rows.forEach(function(row){
-      var okTc = !tc || row.getAttribute('data-telecaller') === tc;
-      var okQ  = !q || (row.getAttribute('data-barcode') || '').indexOf(q) !== -1;
-      var show = okTc && okQ;
-      row.classList.toggle('d-none', !show);
-      if (show) visible++;
+$(document).ready(function(){
+  // ── Grade tables: 6 rows + pagination, keep the server's order ──
+  ['A','B','C'].forEach(function(g){
+    var $t = $('#gradeTable' + g);
+    if ($t.length && $t.find('tbody tr').length){
+      $t.DataTable({ pageLength:6, ordering:false, searching:false,
+                     lengthChange:false, info:true });
+    }
+  });
+  // Re-fit grade-table columns when an accordion opens (tables start hidden)
+  document.querySelectorAll('.accordion-collapse').forEach(function(el){
+    el.addEventListener('shown.bs.collapse', function(){
+      $(this).find('table').each(function(){
+        if ($.fn.dataTable.isDataTable(this)) $(this).DataTable().columns.adjust();
+      });
     });
-    if (noMatch) noMatch.classList.toggle('d-none', !(rows.length && visible === 0));
+  });
+
+  // ── Telecaller Requests: 6 rows + pagination, newest-first (server order) ──
+  var $tc = $('#tcRequestsTable');
+  if ($tc.length && $tc.find('tbody tr[data-barcode]').length){
+    var tcDt = $tc.DataTable({ pageLength:6, ordering:false, dom:'rtip', searching:true });
+    var filterSel = document.getElementById('tcFilter');
+    var searchBox = document.getElementById('tcSearch');
+    // filter by telecaller via the row's data-telecaller attribute (not visible text)
+    $.fn.dataTable.ext.search.push(function(settings, data, dataIndex){
+      if (settings.nTable.id !== 'tcRequestsTable') return true;
+      var tc = filterSel ? filterSel.value : '';
+      if (!tc) return true;
+      var row = tcDt.row(dataIndex).node();
+      return !!row && row.getAttribute('data-telecaller') === tc;
+    });
+    if (filterSel) filterSel.addEventListener('change', function(){ tcDt.draw(); });
+    if (searchBox) searchBox.addEventListener('input', function(){ tcDt.search(this.value).draw(); });
   }
-  if (filterSel) filterSel.addEventListener('change', applyFilter);
-  if (searchBox) searchBox.addEventListener('input', applyFilter);
-})();
+});
 </script>
 {% endblock %}
