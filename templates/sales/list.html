@@ -120,7 +120,7 @@
           <td class="d-none">{{ row.Sale.customer_name or '—' }}</td>
           <td><span class="badge bg-secondary">{{ row.Sale.payment_mode or '—' }}</span></td>
           <td class="text-muted">{{ row.Sale.sold_by }}</td>
-          <td><span class="text-muted small">—</span></td>
+          <td>{% if row.Sale.invoice_file %}<a href="/sales/{{ row.Sale.id }}/download-invoice" class="btn btn-outline-secondary btn-sm py-0 px-1" title="Download Invoice"><i class="bi bi-download"></i></a>{% else %}<span class="text-muted small">—</span>{% endif %}</td>
           <td>
             <div class="d-flex gap-1">
               <a href="/sales/{{ row.Sale.id }}" class="btn btn-outline-info btn-sm py-0 px-1" title="View Detail"><i class="bi bi-eye"></i></a>
@@ -136,10 +136,11 @@
       {% if sales %}
       <tfoot class="table-light">
         <tr>
-          <td></td>
-          <td colspan="7" class="text-end fw-semibold">Total Revenue (this page):</td>
+          <td></td><td></td><td></td><td></td>
+          <td class="d-none"></td><td class="d-none"></td>
+          <td></td><td class="text-end fw-semibold small">Total Revenue:</td>
           <td class="fw-bold text-success">₹{{ "{:,.0f}".format(ns.total) }}</td>
-          <td colspan="6"></td>
+          <td></td><td class="d-none"></td><td></td><td></td><td></td><td></td>
         </tr>
       </tfoot>
       {% endif %}
