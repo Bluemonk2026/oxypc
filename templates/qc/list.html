@@ -125,17 +125,22 @@
 
           {# Server URL + Connect #}
           <div class="mb-2">
-            <label class="form-label small mb-1 fw-semibold text-muted">Stress Server (device IP:7771)</label>
+            <label class="form-label small mb-1 fw-semibold text-muted">Stress Server URL</label>
             <div class="input-group input-group-sm">
               <span class="input-group-text bg-dark text-white border-dark"><i class="bi bi-hdd-network"></i></span>
               <input type="text" id="stressServerUrl" class="form-control form-control-sm"
-                     value="http://127.0.0.1:7771" placeholder="http://192.168.x.x:7771">
+                     value="" placeholder="http://192.168.x.x:7771">
               <button class="btn btn-sm btn-outline-primary" id="stressConnectBtn" onclick="connectStressServer()">
                 <i class="bi bi-plug me-1"></i>Connect
               </button>
             </div>
             <div id="stressConnStatus" class="small text-muted mt-1">
               <i class="bi bi-circle me-1"></i>Not connected
+            </div>
+            <div class="mt-1 small text-muted bg-light rounded px-2 py-1" style="font-size:10px;line-height:1.5">
+              <i class="bi bi-info-circle me-1 text-info"></i>
+              Open <strong>OxyQC Standalone</strong> on the device → Stress Test tab → copy the URL shown under <em>Remote Monitor</em>.<br>
+              Same machine as this browser? Use <code>http://127.0.0.1:7771</code>
             </div>
           </div>
 
